@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Entrenamiento Mega Olimpiadas - Semillas 3°</title>
+<style>
+  :root{
+    --bg:#f5f7fb; --card:#ffffff; --ink:#1f2430; --muted:#6b7280;
+    --primary:#5b5bf6; --primary-dark:#4444d1; --green:#22b573; --red:#e5484d; --yellow:#f5a623;
+    --radius:18px; --shadow:0 8px 24px rgba(30,30,60,.10);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#12131a; --card:#1c1e29; --ink:#eef0f5; --muted:#9aa0ae; --shadow:0 8px 24px rgba(0,0,0,.4); }
+  }
+  :root[data-theme="dark"]{ --bg:#12131a; --card:#1c1e29; --ink:#eef0f5; --muted:#9aa0ae; --shadow:0 8px 24px rgba(0,0,0,.4); }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; min-height:100vh; display:flex; justify-content:center;}
+  .app{width:100%; max-width:480px; padding:16px 16px 40px;}
+  h1{font-size:1.3rem; margin:14px 0 4px; text-align:center;}
+  .subtitle{text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:18px;}
+  .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:14px;}
+  .areas{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .area-btn{border:2px solid transparent; background:var(--card); border-radius:14px; padding:14px 8px; text-align:center; cursor:pointer; box-shadow:var(--shadow); font-weight:600; color:var(--ink); font-size:.95rem; transition:.15s;}
+  .area-btn .emoji{font-size:1.6rem; display:block; margin-bottom:4px;}
+  .area-btn.selected{border-color:var(--primary); background:rgba(91,91,246,.08);}
+  .area-btn:active{transform:scale(.97);}
+  .full-btn{grid-column:1/-1;}
+  .settings-row{display:flex; align-items:center; justify-content:space-between; margin-top:14px; font-size:.9rem;}
+  .settings-row label{color:var(--muted);}
+  select{border:1px solid #d5d8e0; border-radius:10px; padding:6px 10px; background:var(--card); color:var(--ink); font-size:.9rem;}
+  .btn{display:block; width:100%; text-align:center; padding:14px; border:none; border-radius:14px; background:var(--primary); color:#fff; font-size:1.05rem; font-weight:700; cursor:pointer; margin-top:16px;}
+  .btn:active{background:var(--primary-dark);}
+  .btn.secondary{background:transparent; color:var(--primary); border:2px solid var(--primary);}
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .badge{background:rgba(91,91,246,.12); color:var(--primary); font-weight:700; font-size:.8rem; padding:4px 10px; border-radius:999px;}
+  .progress-track{height:8px; background:#e6e8f0; border-radius:999px; overflow:hidden; margin:10px 0 18px;}
+  .progress-fill{height:100%; background:var(--primary); transition:width .2s;}
+  .timer-wrap{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .timer-ring{width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; border:5px solid var(--green); flex:none; transition:border-color .3s, color .3s;}
+  .timer-ring.warn{border-color:var(--yellow); color:var(--yellow);}
+  .timer-ring.danger{border-color:var(--red); color:var(--red); animation:pulse 1s infinite;}
+  @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.08);}100%{transform:scale(1);}}
+  .qmeta{font-size:.8rem; color:var(--muted);}
+  .question-text{font-size:1.05rem; font-weight:600; line-height:1.4; margin:6px 0 10px;}
+  .diagram-box{background:#ffffff; border-radius:14px; padding:12px; margin:6px 0 16px; display:flex; justify-content:center; align-items:center; overflow-x:auto; box-shadow:inset 0 0 0 1px #eee;}
+  .diagram-box svg{max-width:100%; height:auto;}
+  .pie-wrap{display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .pie{width:130px; height:130px; border-radius:50%;}
+  .legend{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; font-size:.75rem;}
+  .legend span{display:flex; align-items:center; gap:4px;}
+  .legend i{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .bars-wrap{display:flex; align-items:flex-end; gap:10px; height:120px; padding-top:10px;}
+  .bar-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-size:.7rem; color:#333;}
+  .bar{width:26px; border-radius:6px 6px 0 0;}
+  .tri-row{display:flex; gap:10px; align-items:flex-end;}
+  .tri-item{display:flex; flex-direction:column; align-items:center; font-size:.65rem; color:#333;}
+  .tree-row{display:flex; gap:14px; align-items:flex-end;}
+  .tree-item{display:flex; flex-direction:column; align-items:center; font-size:.65rem; color:#333;}
+  .planet-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center;}
+  .planet{display:flex; flex-direction:column; align-items:center; font-size:.6rem; color:#333;}
+  .planet .dot{border-radius:50%;}
+  .ratio-row{display:flex; flex-direction:column; gap:10px;}
+  .ratio-set{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:.7rem; color:#333;}
+  .ratio-set .dot{width:14px; height:14px; border-radius:50%; display:inline-block;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{text-align:left; padding:13px 14px; border-radius:14px; border:2px solid #e2e5ee; background:var(--card); color:var(--ink); font-size:.98rem; cursor:pointer; display:flex; gap:10px; align-items:flex-start;}
+  .opt .letter{flex:none; width:26px; height:26px; border-radius:50%; background:#eef0fa; color:var(--primary); font-weight:700; display:flex; align-items:center; justify-content:center; font-size:.85rem;}
+  .opt.correct{border-color:var(--green); background:rgba(34,181,115,.1);}
+  .opt.correct .letter{background:var(--green); color:#fff;}
+  .opt.wrong{border-color:var(--red); background:rgba(229,72,77,.1);}
+  .opt.wrong .letter{background:var(--red); color:#fff;}
+  .opt.disabled{pointer-events:none; opacity:.85;}
+  .feedback{text-align:center; font-weight:700; margin:14px 0 4px; font-size:1rem;}
+  .feedback.ok{color:var(--green);}
+  .feedback.bad{color:var(--red);}
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0;}
+  .stat{background:var(--card); border-radius:14px; box-shadow:var(--shadow); padding:14px; text-align:center;}
+  .stat .num{font-size:1.5rem; font-weight:800;}
+  .stat .lab{font-size:.75rem; color:var(--muted);}
+  .review-item{border-bottom:1px solid #ebedf3; padding:10px 0; font-size:.88rem;}
+  .review-item:last-child{border-bottom:none;}
+  .review-item .q{font-weight:600; margin-bottom:4px;}
+  .tag{display:inline-block; font-size:.7rem; padding:2px 8px; border-radius:999px; margin-right:6px; font-weight:700;}
+  .tag.facil{background:rgba(34,181,115,.15); color:var(--green);}
+  .tag.media{background:rgba(245,166,35,.18); color:#b5720d;}
+  .tag.dificil{background:rgba(229,72,77,.15); color:var(--red);}
+  .hidden{display:none !important;}
+  footer{text-align:center; color:var(--muted); font-size:.72rem; margin-top:10px;}
+  .passage{background:#fffbe6; border:1px solid #f0e2a6; border-radius:14px; padding:10px 14px; margin-bottom:14px; font-size:.85rem; line-height:1.55; color:#4a3f14;}
+  .passage summary{cursor:pointer; font-weight:700; color:#8a6d1b; list-style:none;}
+  .passage summary::-webkit-details-marker{display:none;}
+  .passage summary::before{content:"📖 "; }
+  .passage p{margin:10px 0 0;}
+  .passage + .passage{margin-top:-6px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🏆 Entrenamiento Mega Olimpiadas</h1>
+  <div class="subtitle">Categoría Semillas · Grado 3°</div>
+
+  <div id="screen-setup" class="card">
+    <div style="font-weight:700; margin-bottom:10px;">Elige el componente a practicar</div>
+    <div class="areas" id="area-list"></div>
+    <div class="settings-row">
+      <label>Número de preguntas</label>
+      <select id="numQuestions">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="9999">Todas</option>
+      </select>
+    </div>
+    <button class="btn" id="startBtn">Comenzar simulacro</button>
+  </div>
+
+  <div id="screen-quiz" class="card hidden">
+    <div class="topbar">
+      <span class="badge" id="areaBadge">Área</span>
+      <span class="qmeta" id="qCounter">Pregunta 1 / 10</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="timer-wrap">
+      <div class="timer-ring" id="timerRing">20</div>
+      <div>
+        <div class="qmeta" id="difficultyLabel">Dificultad: fácil</div>
+        <div class="qmeta" id="scoreLive">Aciertos: 0</div>
+      </div>
+    </div>
+    <div id="passageHost"></div>
+    <div class="question-text" id="questionText">...</div>
+    <div id="diagramHost"></div>
+    <button class="btn secondary hidden" id="skipReadingBtn" style="margin-top:0; margin-bottom:14px;">Ya leí, continuar ✅</button>
+    <div class="options" id="optionsList"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div id="screen-results" class="card hidden">
+    <h1 style="margin-top:0;">📊 Resultados</h1>
+    <div class="stats-grid">
+      <div class="stat"><div class="num" id="statCorrect">0</div><div class="lab">Correctas</div></div>
+      <div class="stat"><div class="num" id="statWrong">0</div><div class="lab">Incorrectas / tiempo agotado</div></div>
+      <div class="stat"><div class="num" id="statPct">0%</div><div class="lab">Porcentaje de acierto</div></div>
+      <div class="stat"><div class="num" id="statTime">0s</div><div class="lab">Tiempo promedio por pregunta</div></div>
+    </div>
+    <div id="reviewList"></div>
+    <button class="btn" id="retryBtn">Practicar de nuevo</button>
+    <button class="btn secondary" id="menuBtn">Elegir otro componente</button>
+  </div>
+
+  <footer>Preguntas de Lenguaje y Matemáticas basadas en los cuadernillos Saber 3° (ICFES) compartidos, con diagramas propios de apoyo. Preguntas de Inglés, Naturales y Sociales son de práctica general — súbelos si tienes simulacros oficiales de esas áreas.</footer>
+</div>
+
+<script>
+const TIME_READING = 40;
+const TIME_BY_DIFFICULTY = { facil: 30, media: 22, dificil: 15 };
+
+/* ============ CONSTRUCTORES DE DIAGRAMAS ============ */
+function svgWrap(inner, viewBox){
+  return `<div class="diagram-box"><svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">${inner}</svg></div>`;
+}
+function diagBox3D(w,h,d){
+  // caja simple en perspectiva, dimensiones etiquetadas
+  return svgWrap(`
+    <polygon points="60,50 140,50 140,150 60,150" fill="#bfe3ff" stroke="#333" stroke-width="2"/>
+    <polygon points="60,50 85,25 165,25 140,50" fill="#8fcaff" stroke="#333" stroke-width="2"/>
+    <polygon points="140,50 165,25 165,125 140,150" fill="#6fb8f5" stroke="#333" stroke-width="2"/>
+    <text x="25" y="105" font-size="13" fill="#333">${h} cm</text>
+    <text x="90" y="18" font-size="13" fill="#333">${d} cm</text>
+    <text x="170" y="90" font-size="13" fill="#333">${w} cm</text>
+  `, "0 0 200 170");
+}
+function diagLShape(){
+  return svgWrap(`
+    <polygon points="30,20 150,20 150,90 220,90 220,160 30,160" fill="#ffd8e4" stroke="#444" stroke-width="2"/>
+    <text x="65" y="14" font-size="13" fill="#333">20 cm</text>
+    <text x="185" y="130" font-size="13" fill="#333">20 cm</text>
+    <text x="5" y="95" font-size="13" fill="#333">20 cm</text>
+    <text x="158" y="80" font-size="13" fill="#333">10 cm</text>
+    <text x="45" y="175" font-size="12" fill="#333">Profundidad: 5 cm</text>
+  `, "0 0 240 180");
+}
+function diagRect(w,h,labelW,labelH){
+  return svgWrap(`
+    <rect x="20" y="30" width="220" height="55" fill="#dff3ff" stroke="#333" stroke-width="2"/>
+    <text x="100" y="20" font-size="13" fill="#333">${labelW}</text>
+    <text x="245" y="60" font-size="13" fill="#333">${labelH}</text>
+  `, "0 0 270 100");
+}
+function diagFichas(pattern){
+  let cells = '';
+  const size = 28, gap = 2;
+  pattern.forEach((row,r)=>{
+    row.forEach((val,c)=>{
+      const x = c*(size+gap), y = r*(size+gap);
+      cells += `<rect x="${x}" y="${y}" width="${size}" height="${size}" fill="${val ? '#4a90e2' : '#c9ccd6'}" stroke="#fff" stroke-width="2"/>`;
+    });
+  });
+  const dim = pattern.length*(size+gap);
+  return svgWrap(cells, `0 0 ${dim} ${dim}`);
+}
+function diagPie(slices){
+  let acc = 0;
+  const total = slices.reduce((s,x)=>s+x.value,0);
+  const gradParts = slices.map(s=>{
+    const start = acc/total*360; acc += s.value; const end = acc/total*360;
+    return `${s.color} ${start}deg ${end}deg`;
+  }).join(', ');
+  const legend = slices.map(s=>`<span><i style="background:${s.color}"></i>${s.label}: ${s.value}</span>`).join('');
+  return `<div class="diagram-box"><div class="pie-wrap"><div class="pie" style="background:conic-gradient(${gradParts})"></div><div class="legend">${legend}</div></div></div>`;
+}
+function diagBars(labels, values, color, unit){
+  const max = Math.max(...values);
+  const cols = labels.map((l,i)=>{
+    const hpx = Math.round((values[i]/max)*90)+10;
+    return `<div class="bar-col"><div>${values[i]}${unit||''}</div><div class="bar" style="height:${hpx}px; background:${color}"></div><div>${l}</div></div>`;
+  }).join('');
+  return `<div class="diagram-box"><div class="bars-wrap">${cols}</div></div>`;
+}
+function diagTriangles(bases, height){
+  const items = bases.map(b=>{
+    const w = b*8, h = height*8;
+    return `<div class="tri-item"><svg viewBox="0 0 ${w+10} ${h+10}" width="${w+10}" height="${h+10}"><polygon points="5,${h+5} ${w+5},${h+5} ${(w/2)+5},5" fill="#ffd27d" stroke="#333" stroke-width="2"/></svg><div>base ${b}cm</div></div>`;
+  }).join('');
+  return `<div class="diagram-box"><div class="tri-row">${items}</div></div>`;
+}
+function diagTrees(counts){
+  const items = counts.map((c,i)=>{
+    const scale = 1 + i*0.25;
+    const w = 40*scale, h = 55*scale;
+    let dots = '';
+    for(let k=0;k<c;k++){
+      const dx = 10 + (k%3)*((w-20)/2);
+      const dy = 15 + Math.floor(k/3)*15;
+      dots += `<circle cx="${dx}" cy="${dy}" r="4" fill="#e5484d"/>`;
+    }
+    return `<div class="tree-item"><svg viewBox="0 0 ${w} ${h+15}" width="${w}" height="${h+15}"><polygon points="${w/2},2 2,${h-10} ${w-2},${h-10}" fill="#4caf6e"/><rect x="${w/2-4}" y="${h-10}" width="8" height="12" fill="#8b5a2b"/>${dots}</svg><div>${c} bolas</div></div>`;
+  }).join('');
+  return `<div class="diagram-box"><div class="tree-row">${items}</div></div>`;
+}
+function diagPlanets(order, colors){
+  const items = order.map((name,i)=>`<div class="planet"><div class="dot" style="width:${18+i*3}px;height:${18+i*3}px;background:${colors[i]}"></div>${i+1}. ${name}</div>`).join('');
+  return `<div class="diagram-box"><div class="planet-row"><div class="planet"><div class="dot" style="width:34px;height:34px;background:#f5a623"></div>Sol</div>${items}</div></div>`;
+}
+function diagKite(a,b){
+  return svgWrap(`
+    <polygon points="90,10 150,70 90,170 30,70" fill="#ffe28a" stroke="#333" stroke-width="2"/>
+    <line x1="90" y1="10" x2="90" y2="170" stroke="#333" stroke-width="2"/>
+    <line x1="30" y1="70" x2="150" y2="70" stroke="#333" stroke-width="2"/>
+    <text x="55" y="45" font-size="13" fill="#333">${a} cm</text>
+    <text x="100" y="55" font-size="13" fill="#333">${b} cm</text>
+  `, "0 0 180 180");
+}
+function diagReflection(){
+  return svgWrap(`
+    <circle cx="60" cy="40" r="18" fill="#e5484d"/>
+    <rect x="110" y="25" width="30" height="30" fill="#4a90e2"/>
+    <polygon points="185,20 200,55 170,55" fill="#22b573"/>
+    <line x1="10" y1="70" x2="230" y2="70" stroke="#333" stroke-width="2" stroke-dasharray="4"/>
+    <circle cx="60" cy="100" r="18" fill="#e5484d" opacity=".55"/>
+    <rect x="110" y="85" width="30" height="30" fill="#4a90e2" opacity=".55" transform="scale(1,-1) translate(0,-200)"/>
+    <polygon points="185,120 200,85 170,85" fill="#22b573" opacity=".55"/>
+    <text x="15" y="65" font-size="11" fill="#333">figura</text>
+    <text x="15" y="135" font-size="11" fill="#333">reflejo</text>
+  `, "0 0 230 145");
+}
+function diagRatio(sets){
+  const rows = sets.map(s=>{
+    let dots='';
+    for(let i=0;i<s.total;i++){
+      dots += `<span class="dot" style="background:${i<s.highlighted ? s.color : '#c9ccd6'}"></span>`;
+    }
+    return `<div class="ratio-set"><b>${s.label}:</b>${dots}<span>(${s.highlighted} de ${s.total})</span></div>`;
+  }).join('');
+  return `<div class="diagram-box"><div class="ratio-row">${rows}</div></div>`;
+}
+
+function renderDiagram(q){
+  const host = document.getElementById('diagramHost');
+  if(!q.diagram){ host.innerHTML=''; return; }
+  const d = q.diagram;
+  let html = '';
+  switch(d.type){
+    case 'box3d': html = diagBox3D(d.w,d.h,d.d); break;
+    case 'lshape': html = diagLShape(); break;
+    case 'rect': html = diagRect(d.w,d.h,d.labelW,d.labelH); break;
+    case 'fichas': html = diagFichas(d.pattern); break;
+    case 'pie': html = diagPie(d.slices); break;
+    case 'bars': html = diagBars(d.labels,d.values,d.color,d.unit); break;
+    case 'triangles': html = diagTriangles(d.bases,d.height); break;
+    case 'trees': html = diagTrees(d.counts); break;
+    case 'planets': html = diagPlanets(d.order,d.colors); break;
+    case 'kite': html = diagKite(d.a,d.b); break;
+    case 'reflection': html = diagReflection(); break;
+    case 'ratio': html = diagRatio(d.sets); break;
+    default: html='';
+  }
+  host.innerHTML = html;
+}
+
+/* ============ TEXTOS DE REFERENCIA (LECTURA) ============ */
+const PASSAGES = {
+  rios: {
+    title: '¿Cómo aparecieron los ríos?',
+    text: 'Cuentan los indígenas Tikuna que lo primero que se creó fue la Tierra. Luego aparecieron los animales. La Tierra dio frutos. Pero de repente, apareció el Sol y todos empezaron a sentir calor y sed. El pájaro carpintero reunió a todos los animales y les contó que él había oído hablar de un líquido maravilloso que revivía las plantas y les quitaría la sed a todos. Entonces, invitó al jabalí para que fueran en busca del valioso líquido. Luego de muchos días, cansados y muertos de sed, se encontraron con una tortuga que estaba chapoteando en un líquido transparente que salía de un árbol. Los dos animales le pidieron un poco para calmar la sed. La tortuga les dijo que podían tener todo el líquido que quisieran, solo si encontraban la forma de derribar el árbol. El pájaro carpintero lo intentó, sin obtener éxito, así que convocó a todos los animales de la Tierra para que se subieran al árbol. Gracias al peso de todos, el árbol se derrumbó; así se dio origen a la primera lluvia. De sus largas ramas nacieron los ríos y desde ese día todos los animales tuvieron agua para beber y los peces un lugar para vivir.'
+  },
+  perros: {
+    title: '¿Por qué ladran los perros?',
+    text: '1. Ansiedad: los perros, con niveles mayores de ansiedad, ladran cuando están solos o ante ruidos fuertes.<br>2. Satisfacción de necesidades: por ejemplo, cuando tienen hambre, sed, quieren hacer pipí o popó.<br>3. Buscan atención: a veces quieren jugar y nadie les pone atención.<br>4. Agresión territorial: cuando se sienten amenazados o algo representa peligro.'
+  },
+  frutas: {
+    title: 'Canasta de frutas',
+    text: '<b>Ingredientes:</b> 1 banano partido en rodajas · 2 rodajas de piña en cuadritos · 1 naranja · jugo de un limón · 12 uvas.<br><b>Procedimiento:</b><br>1. Pídele a un adulto que parta la naranja a la mitad. Luego, con ayuda de un cuchillo, saca los gajos y pártelos en trozos. Guarda la cáscara de la naranja.<br>2. En un recipiente hondo, mezcla el banano, las uvas, la piña, la naranja y el jugo de limón.<br>3. Sirve la ensalada de frutas en las cáscaras de naranja.<br>¡Comparte la canasta de frutas!'
+  },
+  zapatillas: {
+    title: 'Carrera de zapatillas',
+    text: 'Todos los animales del bosque se levantaron temprano porque era el día de la gran carrera de zapatillas. Estaban todos reunidos junto al lago cuando la jirafa, la más alta y presumida del bosque, comenzó a burlarse de sus amigos: "¡Ja, ja, ja, qué tortuga tan bajita y lenta! ¡Jo, jo, jo, qué rinoceronte tan gordo! ¡Je, je, je, miren la trompa de ese elefante!". Entonces, llegó la hora de la competencia. El zorro llevaba unas zapatillas a rayas amarillas y rojas. La cebra, unas rosadas y la tortuga se puso unas zapatillas blancas como las nubes. De repente, cuando la carrera estaba a punto de iniciar, la jirafa gritó desesperada. Era tan alta que no podía atarse los cordones de sus zapatillas: "¡Ah, ah, qué alguien me ayude!". Todos los animales se quedaron mirándola y el zorro le dijo: "Te reíste de los demás porque son diferentes y es cierto. Sin embargo, podemos ayudarnos cuando lo necesitemos". Mientras la jirafa pedía perdón por haberse reído de ellos, las hormigas treparon por sus zapatillas para amarrarle los cordones. Finalmente, cuando la competencia terminó, todos festejaron porque habían ganado una nueva amiga.'
+  },
+  abejita: {
+    title: 'La abejita criticona',
+    text: 'Un día, una abeja revoloteaba distraída mientras se burlaba de un gusano porque se arrastraba por el suelo. De repente, chocó con una telaraña y se quedó pegada. "Socorro", dijo la abeja. El gusano, al verla, pidió la ayuda de otros animales y lograron rescatarla. La abeja pidió disculpas al gusano por reírse de él y no volvió a burlarse de ningún otro animal.'
+  }
+};
+
+function renderPassage(q){
+  const host = document.getElementById('passageHost');
+  if(!q.passage){ host.innerHTML=''; return; }
+  const ids = Array.isArray(q.passage) ? q.passage : [q.passage];
+  host.innerHTML = ids.map(id=>{
+    const p = PASSAGES[id];
+    return `<details class="passage" open><summary>${p.title}</summary><p>${p.text}</p></details>`;
+  }).join('');
+}
+
+/* ============ BANCO DE PREGUNTAS ============ */
+const QUESTIONS = [
+/* ================= LENGUAJE - LECTURA ================= */
+{area:'Lenguaje', passage:'rios', difficulty:'facil', q:'"Derribar el árbol" significa lo mismo que:', options:['Quemar','Ubicar','Aplastar','Tumbar'], correct:3},
+{area:'Lenguaje', passage:'rios', difficulty:'facil', q:'En la leyenda de los ríos, ¿cuándo apareció la lluvia?', options:['Cuando cortaron el árbol.','Cuando el pájaro carpintero lo picoteó.','Cuando el jabalí buscó el líquido.','Cuando los animales derribaron el árbol.'], correct:3},
+{area:'Lenguaje', passage:'rios', difficulty:'facil', q:'"Lo primero que se creó fue la Tierra. Luego aparecieron los animales." ¿Qué hace esta oración?', options:['Presenta el nudo.','Ubica el lugar.','Indica el desenlace.','Da inicio a la narración.'], correct:3},
+{area:'Lenguaje', passage:'rios', difficulty:'facil', q:'"él había oído hablar de un líquido maravilloso..." ¿A quién se refiere "él"?', options:['Al indígena.','Al jabalí.','Al pájaro carpintero.','Al árbol.'], correct:2},
+{area:'Lenguaje', passage:'rios', difficulty:'facil', q:'El pájaro no pudo solo, pero sí junto a todos los animales. ¿Qué enseñanza deja esto?', options:['Trabajar solo es mejor.','Unidos somos más fuertes.','El egoísmo es perjudicial.','Algunos animales son débiles.'], correct:1},
+{area:'Lenguaje', passage:'perros', difficulty:'facil', q:'En "por ejemplo, cuando tienen hambre, sed..." ¿para qué se usa "por ejemplo"?', options:['Mencionar necesidades de los perros.','Mostrar qué llama su atención.','Señalar agresiones.','Describir el ladrido.'], correct:0},
+{area:'Lenguaje', passage:'perros', difficulty:'facil', q:'¿Qué causa altos niveles de ansiedad a los perros?', options:['Tener hambre o querer jugar.','Sentirse en peligro o hacer popó.','Estar solos o escuchar ruidos fuertes.','Querer atención o sentir sed.'], correct:2},
+{area:'Lenguaje', passage:'perros', difficulty:'media', q:'¿Cuál es la finalidad del texto "¿Por qué ladran los perros?"?', options:['Enseñar cuidados de perros.','Ayudar a tener perros felices.','Presentar consecuencias del ladrido.','Mencionar las causas del ladrido.'], correct:3},
+{area:'Lenguaje', passage:'perros', difficulty:'media', q:'La imagen del recuadro "Buscan atención" respecto al texto:', options:['Lo niega.','Lo repite.','Lo ejemplifica.','Muestra algo distinto.'], correct:2},
+{area:'Lenguaje', passage:'perros', difficulty:'media', q:'Frente a un ladrido por agresión territorial se debe:', options:['Buscar una necesidad sin atender.','Jugar con el perro.','Revisar si algo lo amenaza.','Bajar el volumen de ruidos.'], correct:2},
+{area:'Lenguaje', passage:'frutas', difficulty:'media', q:'En la receta, "rodajas" significa lo mismo que:', options:['Rebanadas.','Cubos.','Tiras.','Partes.'], correct:0},
+{area:'Lenguaje', passage:'frutas', difficulty:'media', q:'Según el paso 1 de la receta, ¿con qué se sacan los gajos de naranja?', options:['Tenedor.','Cuchara.','Cuchillo.','Mano.'], correct:2},
+{area:'Lenguaje', passage:'frutas', difficulty:'media', q:'Según la receta, ¿qué se va a preparar?', options:['Uvas sin pepitas.','Jugo de limón.','Gajos de naranja.','Una canasta de frutas.'], correct:3},
+{area:'Lenguaje', passage:'frutas', difficulty:'media', q:'La imagen del paso 3 de la receta muestra:', options:['Los ingredientes.','Ensalada servida en cáscara de naranja.','Los utensilios.','Una taza con la mezcla.'], correct:1},
+{area:'Lenguaje', passage:'frutas', difficulty:'dificil', q:'"¡Comparte la canasta de frutas!" es:', options:['Una invitación.','Una orden.','Una petición.','Una pregunta.'], correct:0},
+{area:'Lenguaje', passage:'zapatillas', difficulty:'dificil', q:'"Mientras la jirafa pedía perdón, las hormigas treparon..." ¿Qué indica "Mientras"?', options:['La razón del grito.','El lugar.','El tiempo en que ocurren las acciones.','La causa de la reunión.'], correct:2},
+{area:'Lenguaje', passage:'zapatillas', difficulty:'dificil', q:'¿Qué oración describe el carácter de la jirafa?', options:['"no podía atarse los cordones"','"Todos se quedaron mirándola"','"festejaron una nueva amiga"','"la más presumida... burlarse de sus amigos"'], correct:3},
+{area:'Lenguaje', passage:'zapatillas', difficulty:'dificil', q:'¿A quién se dirige el zorro al decir "podemos ayudarnos"?', options:['A la tortuga.','A la jirafa.','Al elefante.','Al rinoceronte.'], correct:1},
+{area:'Lenguaje', passage:'zapatillas', difficulty:'dificil', q:'¿Qué hace el autor para dejar una enseñanza en "Carrera de zapatillas"?', options:['Exalta a los otros animales.','Contrasta a la jirafa con los demás.','Describe las zapatillas.','Narra cómo se hacen las carreras.'], correct:1},
+{area:'Lenguaje', passage:['zapatillas','abejita'], difficulty:'dificil', q:'¿Cuál es la relación entre "La abejita criticona" y "Carrera de zapatillas"?', options:['Hablan de una competencia.','Dejan una enseñanza parecida.','Tienen los mismos personajes.','Presentan un enemigo común.'], correct:1},
+
+/* ================= MATEMÁTICAS ================= */
+{area:'Matemáticas', difficulty:'facil', q:'Manuel leyó 80 páginas en 3 días. Día 1: 10 páginas. Día 2: 20 páginas. ¿Cuántas leyó el día 3?', options:['70','50','40','30'], correct:1},
+{area:'Matemáticas', difficulty:'facil', q:'Lina reparte 40 láminas en 5 sobres iguales. ¿Cuántas láminas trae cada sobre?', options:['45','35','8','5'], correct:2},
+{area:'Matemáticas', difficulty:'facil', q:'3 metros de tela cuestan $42.000. ¿Cuánto cuesta 1 metro?', options:['$126.000','$14.000','$21.000','$42.000'], correct:1},
+{area:'Matemáticas', difficulty:'facil', q:'Un molde en forma de L tiene esta área de base y esta profundidad. ¿Cuál es su volumen?', diagram:{type:'lshape'}, options:['1.500 cm³','2.000 cm³','100 cm³','300 cm³'], correct:0},
+{area:'Matemáticas', difficulty:'facil', q:'Observa la caja. ¿Cuál es su volumen?', diagram:{type:'box3d', w:3, h:9, d:3}, options:['15 cm³','27 cm³','54 cm³','81 cm³'], correct:3},
+{area:'Matemáticas', difficulty:'facil', q:'Observa el espejo. ¿Cuál es su perímetro?', diagram:{type:'rect', w:200, h:50, labelW:'200 cm', labelH:'50 cm'}, options:['100 cm','250 cm','400 cm','500 cm'], correct:3},
+{area:'Matemáticas', difficulty:'facil', q:'Este dibujo se rellena con fichas azules y grises, sin girarlas. ¿Cuántas fichas coloreadas se necesitan en total?', diagram:{type:'fichas', pattern:[[0,0,1,1,0,0],[0,0,1,1,0,0],[1,1,1,1,1,1],[1,1,1,1,1,1],[0,0,1,1,0,0],[0,0,1,1,0,0]]}, options:['Altura 3, 18 fichas','Altura 6, 36 fichas','Altura 3, 9 fichas','Altura 6, 12 fichas'], correct:1},
+{area:'Matemáticas', difficulty:'media', q:'Mónica registró sus ventas de empanadas. ¿Cuántas vendió el día 3?', diagram:{type:'bars', labels:['D1','D2','D3','D4','D5'], values:[20,20,40,25,25], color:'#f5a623'}, options:['40','20','30','25'], correct:0},
+{area:'Matemáticas', difficulty:'media', q:'15 estudiantes votan por representante: Daniel 3 votos, Rocío 4 votos, Camila 5 votos, Jhonatan 3 votos. ¿Quién gana?', diagram:{type:'bars', labels:['Daniel','Rocío','Camila','Jhon.'], values:[3,4,5,3], color:'#5b5bf6', unit:''}, options:['Daniel','Camila','Jhonatan','Rocío'], correct:1},
+{area:'Matemáticas', difficulty:'media', q:'La granja de 3° recolectó estos alimentos. ¿Cuántos tomates hay?', diagram:{type:'pie', slices:[{label:'Tomate', value:20, color:'#22b573'},{label:'Repollo', value:10, color:'#e5484d'},{label:'Acelga', value:15, color:'#f5a623'},{label:'Zanahoria', value:30, color:'#4a90e2'}]}, options:['15','20','30','10'], correct:1},
+{area:'Matemáticas', difficulty:'media', q:'Carolina dibuja triángulos con altura fija de 3 cm y bases de 2, 4, 6 y 8 cm (área = base × altura ÷ 2). ¿Qué se puede afirmar sobre las áreas?', diagram:{type:'triangles', bases:[2,4,6,8], height:3}, options:['Múltiplos de 3, desde 3 cm².','Impares, desde 5 cm².','Pares, desde 2 cm².','Múltiplos de 6, desde 6 cm².'], correct:0},
+{area:'Matemáticas', difficulty:'media', q:'Observa cómo aumentan las bolas navideñas de un árbol al siguiente. ¿Cómo aumenta la cantidad?', diagram:{type:'trees', counts:[3,4,5]}, options:['1 bola de 2 a 3m y 2 bolas de 3 a 4m.','1 bola navideña por cada metro que aumenta.','4 bolas de 2 a 3m y 5 de 3 a 4m.','Ninguna de las anteriores.'], correct:1},
+{area:'Matemáticas', difficulty:'media', q:'El baúl de la biblioteca solo tiene libros de cuentos, de aventuras y de mascotas. ¿Cuál es imposible sacar?', options:['Un libro de cuentos.','Un libro de fábulas.','Un libro de aventuras.','Un libro de mascotas.'], correct:1},
+{area:'Matemáticas', difficulty:'media', q:'Samuel ahorró: 2 billetes de $100.000, 2 de $50.000 y 1 de $20.000. ¿Cuánto ahorró en total?', options:['$420.000','$320.000','$300.000','$370.000'], correct:1},
+{area:'Matemáticas', difficulty:'dificil', q:'En el libro verde hay 2 dibujos de oruga de 4 en total. En el libro azul hay 3 de 7. ¿En cuál es más probable sacar una oruga al azar?', diagram:{type:'ratio', sets:[{label:'Verde', total:4, highlighted:2, color:'#22b573'},{label:'Azul', total:7, highlighted:3, color:'#4a90e2'}]}, options:['Libro azul.','Libro verde.','Es igual de probable.','No se puede saber.'], correct:1},
+{area:'Matemáticas', difficulty:'dificil', q:'Ivón escribió: "Quinientos seis mil novecientos" pesos. ¿Cuál es el número?', options:['56.900','506.900','5.006.900','5.006.000.900'], correct:1},
+{area:'Matemáticas', difficulty:'dificil', q:'Código de planeta: 1er dígito = orden desde el Sol, los otros dos = lunas. ¿Qué significa el código 516?', diagram:{type:'planets', order:['Gris','Amarillo','Verde','Rojo','Azul','Rosado'], colors:['#9aa0ae','#f5c518','#4caf6e','#e5484d','#4a90e2','#f7a1c4']}, options:['El planeta azul tiene 16 lunas.','El planeta rosado tiene 5 lunas.','El planeta azul tiene 6 lunas.','El planeta rosado tiene 15 lunas.'], correct:0},
+{area:'Matemáticas', difficulty:'dificil', q:'La cometa de Marco tiene esta forma y medidas. ¿Cuál cometa (misma forma) es semejante, en razón 2:3?', diagram:{type:'kite', a:40, b:60}, options:['Lados de 20 cm y 30 cm.','Lados de 10 cm y 15 cm (forma ovalada).','Lados de 20 cm y 50 cm.','Lados de 10 cm y 20 cm (forma ovalada).'], correct:0},
+{area:'Matemáticas', difficulty:'dificil', q:'Al reflejarse en el agua, una figura que está de pie se ve:', diagram:{type:'reflection'}, options:['Igual, sin cambios.','Volteada de cabeza, mismo orden izquierda-derecha.','Volteada de izquierda a derecha.','Con otros colores.'], correct:1},
+
+/* ================= INGLÉS ================= */
+{area:'Inglés', difficulty:'facil', q:"How do you say 'perro' in English?", options:['Dog','Cat','Bird','Fish'], correct:0},
+{area:'Inglés', difficulty:'facil', q:'What color is the sun?', options:['Blue','Yellow','Green','Black'], correct:1},
+{area:'Inglés', difficulty:'facil', q:'Choose the correct morning greeting:', options:['Good night','Good morning','Good afternoon','Goodbye'], correct:1},
+{area:'Inglés', difficulty:'media', q:'Complete: "I ___ a student."', options:['is','am','are','be'], correct:1},
+{area:'Inglés', difficulty:'media', q:"What number is 'seven'?", options:['5','6','7','8'], correct:2},
+{area:'Inglés', difficulty:'media', q:"Which word means 'grande'?", options:['Small','Big','Fast','Slow'], correct:1},
+{area:'Inglés', difficulty:'dificil', q:"Plural of 'child':", options:['childs','childes','children','child'], correct:2},
+{area:'Inglés', difficulty:'dificil', q:'Complete: "She ___ to school every day."', options:['go','goes','going','gone'], correct:1},
+
+/* ================= CIENCIAS NATURALES ================= */
+{area:'Naturales', difficulty:'facil', q:'¿Cuál es un ser vivo?', options:['Piedra','Árbol','Silla','Carro'], correct:1},
+{area:'Naturales', difficulty:'facil', q:'¿Qué sentido usamos para escuchar?', options:['Vista','Oído','Olfato','Tacto'], correct:1},
+{area:'Naturales', difficulty:'facil', q:'El agua en estado sólido se llama:', options:['Vapor','Hielo','Líquido','Gas'], correct:1},
+{area:'Naturales', difficulty:'media', q:'¿Cuál animal es vertebrado?', options:['Araña','Caracol','Perro','Mariposa'], correct:2},
+{area:'Naturales', difficulty:'media', q:'¿Qué necesitan las plantas para la fotosíntesis?', options:['Solo agua','Luz solar y agua','Solo tierra','Solo aire'], correct:1},
+{area:'Naturales', difficulty:'media', q:'El planeta en que vivimos se llama:', options:['Marte','Venus','Tierra','Júpiter'], correct:2},
+{area:'Naturales', difficulty:'dificil', q:'¿Cuál cambio es reversible?', options:['Quemar papel','Congelar agua','Freír un huevo','Oxidar un clavo'], correct:1},
+{area:'Naturales', difficulty:'dificil', q:'¿Qué función cumple la raíz de las plantas?', options:['Hacer fotosíntesis','Absorber agua y nutrientes','Producir flores','Dar sombra'], correct:1},
+
+/* ================= SOCIALES ================= */
+{area:'Sociales', difficulty:'facil', q:'¿Cuáles son los puntos cardinales?', options:['Arriba, abajo, izq., der.','Norte, Sur, Este, Oeste','Rojo, azul, verde, amarillo','Uno, dos, tres, cuatro'], correct:1},
+{area:'Sociales', difficulty:'facil', q:'Personas que viven en el mismo lugar y comparten normas forman una:', options:['Familia','Comunidad','Empresa','País'], correct:1},
+{area:'Sociales', difficulty:'facil', q:'¿Cuál es un recurso natural?', options:['Computador','Agua','Libro','Silla'], correct:1},
+{area:'Sociales', difficulty:'media', q:'¿Qué representa un mapa?', options:['Un dibujo de una persona','Un lugar o territorio','Una lista de números','Un cuento'], correct:1},
+{area:'Sociales', difficulty:'media', q:'Las normas de convivencia sirven para:', options:['Molestar a los demás','Vivir en armonía y respeto','Ganar dinero','Jugar solamente'], correct:1},
+{area:'Sociales', difficulty:'media', q:'¿Quiénes hacen parte del gobierno escolar?', options:['Solo el rector','Estudiantes, docentes y directivos','Solo los padres','Nadie'], correct:1},
+{area:'Sociales', difficulty:'dificil', q:'Un recurso natural que se puede agotar se llama:', options:['Renovable','No renovable','Artificial','Eterno'], correct:1},
+{area:'Sociales', difficulty:'dificil', q:'¿Cuál es una autoridad local en Colombia?', options:['El Papa','El alcalde','El presidente de otro país','Un actor'], correct:1},
+];
+
+const AREAS = [
+  {key:'Todas', label:'Todas las áreas', emoji:'🎯'},
+  {key:'Lenguaje', label:'Lenguaje', emoji:'📖'},
+  {key:'Matemáticas', label:'Matemáticas', emoji:'🔢'},
+  {key:'Inglés', label:'Inglés', emoji:'🇬🇧'},
+  {key:'Naturales', label:'Naturales', emoji:'🌱'},
+  {key:'Sociales', label:'Sociales', emoji:'🌎'},
+];
+
+let selectedArea = 'Todas';
+let quizPool = [];
+let currentIndex = 0;
+let score = 0;
+let wrong = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let totalTime = 0;
+let timeSpentAll = 0;
+let answered = false;
+let reviewData = [];
+
+const screenSetup = document.getElementById('screen-setup');
+const screenQuiz = document.getElementById('screen-quiz');
+const screenResults = document.getElementById('screen-results');
+const areaListEl = document.getElementById('area-list');
+const startBtn = document.getElementById('startBtn');
+const numQuestionsEl = document.getElementById('numQuestions');
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+AREAS.forEach(a=>{
+  const btn = document.createElement('div');
+  btn.className = 'area-btn' + (a.key==='Todas' ? ' full-btn' : '') + (a.key===selectedArea ? ' selected' : '');
+  btn.innerHTML = `<span class="emoji">${a.emoji}</span>${a.label}`;
+  btn.addEventListener('click', ()=>{
+    selectedArea = a.key;
+    document.querySelectorAll('.area-btn').forEach(el=>el.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+  areaListEl.appendChild(btn);
+});
+
+startBtn.addEventListener('click', startQuiz);
+document.getElementById('retryBtn').addEventListener('click', startQuiz);
+document.getElementById('menuBtn').addEventListener('click', ()=> showScreen('setup'));
+
+function showScreen(name){
+  screenSetup.classList.toggle('hidden', name!=='setup');
+  screenQuiz.classList.toggle('hidden', name!=='quiz');
+  screenResults.classList.toggle('hidden', name!=='results');
+}
+
+function startQuiz(){
+  let source = selectedArea === 'Todas' ? QUESTIONS : QUESTIONS.filter(q=>q.area===selectedArea);
+  source = shuffle(source);
+  const n = parseInt(numQuestionsEl.value,10);
+  quizPool = source.slice(0, Math.min(n, source.length));
+  currentIndex = 0; score = 0; wrong = 0; timeSpentAll = 0; reviewData = [];
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  clearInterval(timerInterval);
+  const q = quizPool[currentIndex];
+  document.getElementById('areaBadge').textContent = q.area;
+  document.getElementById('qCounter').textContent = `Pregunta ${currentIndex+1} / ${quizPool.length}`;
+  document.getElementById('progressFill').style.width = `${(currentIndex/quizPool.length)*100}%`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('scoreLive').textContent = `Aciertos: ${score}`;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  renderPassage(q);
+  renderDiagram(q);
+
+  const optionsList = document.getElementById('optionsList');
+  optionsList.innerHTML = '';
+
+  const skipBtn = document.getElementById('skipReadingBtn');
+  skipBtn.classList.remove('hidden');
+  skipBtn.onclick = ()=>{ clearInterval(timerInterval); startAnswering(q); };
+
+  document.getElementById('difficultyLabel').textContent = '📖 Tiempo de lectura';
+  totalTime = TIME_READING;
+  timeLeft = totalTime;
+  updateTimerUI();
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    updateTimerUI();
+    if(timeLeft<=0){ clearInterval(timerInterval); startAnswering(q); }
+  },1000);
+}
+
+function startAnswering(q){
+  const skipBtn = document.getElementById('skipReadingBtn');
+  skipBtn.classList.add('hidden');
+
+  const diffLabels = {facil:'fácil', media:'media', dificil:'difícil'};
+  document.getElementById('difficultyLabel').textContent = `✍️ Responde · Dificultad: ${diffLabels[q.difficulty]}`;
+
+  const optionsList = document.getElementById('optionsList');
+  optionsList.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.innerHTML = `<span class="letter">${letters[idx]}</span><span>${opt}</span>`;
+    div.addEventListener('click', ()=> selectAnswer(idx));
+    optionsList.appendChild(div);
+  });
+
+  clearInterval(timerInterval);
+  totalTime = TIME_BY_DIFFICULTY[q.difficulty];
+  timeLeft = totalTime;
+  updateTimerUI();
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    updateTimerUI();
+    if(timeLeft<=0){ clearInterval(timerInterval); selectAnswer(-1); }
+  },1000);
+}
+
+function updateTimerUI(){
+  const ring = document.getElementById('timerRing');
+  ring.textContent = timeLeft;
+  ring.classList.remove('warn','danger');
+  if(timeLeft <= totalTime*0.2) ring.classList.add('danger');
+  else if(timeLeft <= totalTime*0.5) ring.classList.add('warn');
+}
+
+function selectAnswer(idx){
+  if(answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+  const q = quizPool[currentIndex];
+  const timeUsed = totalTime - Math.max(timeLeft,0);
+  timeSpentAll += timeUsed;
+
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i===q.correct) el.classList.add('correct');
+    if(i===idx && idx!==q.correct) el.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('feedback');
+  const isCorrect = idx === q.correct;
+  if(isCorrect){ score++; fb.textContent = '¡Correcto! 🎉'; fb.className = 'feedback ok'; }
+  else { wrong++; fb.textContent = idx===-1 ? '⏱️ Se acabó el tiempo' : 'Incorrecto'; fb.className = 'feedback bad'; }
+  document.getElementById('scoreLive').textContent = `Aciertos: ${score}`;
+
+  reviewData.push({
+    area: q.area, q: q.q, difficulty: q.difficulty,
+    correctText: q.options[q.correct],
+    givenText: idx>=0 ? q.options[idx] : '(sin responder — tiempo agotado)',
+    isCorrect
+  });
+
+  setTimeout(()=>{
+    currentIndex++;
+    if(currentIndex < quizPool.length){ renderQuestion(); } else { finishQuiz(); }
+  }, 1200);
+}
+
+function finishQuiz(){
+  document.getElementById('progressFill').style.width = '100%';
+  showScreen('results');
+  document.getElementById('statCorrect').textContent = score;
+  document.getElementById('statWrong').textContent = wrong;
+  const pct = quizPool.length ? Math.round((score/quizPool.length)*100) : 0;
+  document.getElementById('statPct').textContent = pct + '%';
+  const avg = quizPool.length ? Math.round(timeSpentAll/quizPool.length) : 0;
+  document.getElementById('statTime').textContent = avg + 's';
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '<div style="font-weight:700; margin:14px 0 6px;">Repaso de preguntas</div>';
+  reviewData.forEach(r=>{
+    const div = document.createElement('div');
+    div.className = 'review-item';
+    div.innerHTML = `
+      <span class="tag ${r.difficulty}">${r.difficulty}</span>
+      <span class="tag" style="background:${r.isCorrect ? 'rgba(34,181,115,.15)':'rgba(229,72,77,.15)'}; color:${r.isCorrect?'#1a8f5c':'#c23237'}">${r.area}</span>
+      <div class="q">${r.q}</div>
+      <div>${r.isCorrect ? '✅' : '❌'} Tu respuesta: ${r.givenText}</div>
+      ${!r.isCorrect ? `<div>✔️ Correcta: ${r.correctText}</div>` : ''}
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
